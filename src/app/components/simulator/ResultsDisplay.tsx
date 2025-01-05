@@ -9,6 +9,7 @@ import {
   Legend,
 } from "chart.js";
 import { Chart as ChartJS } from "chart.js";
+import ColumnChart from "./ColumnChart";
 
 ChartJS.register(
   CategoryScale,
@@ -36,17 +37,22 @@ export default function ResultsDisplay({ data }: { data: InvestmentData }) {
     investmentPeriod,
   } = data;
 
-  // Cálculo simplificado (você pode expandir isso para incluir mais detalhes)
+  // Cálculo simplificado
   const totalMonths = investmentPeriod * 12;
   const monthlyRate = annualReturnRate / 100 / 12;
   let balance = initialAmount;
+  let totalContributions = initialAmount;
   const chartData = [];
 
   for (let i = 0; i <= totalMonths; i++) {
     chartData.push(balance.toFixed(2));
+    if (i > 0) totalContributions += monthlyContribution; // Soma as contribuições mensais
     balance += monthlyContribution;
     balance *= 1 + monthlyRate;
   }
+
+  // Calcula o rendimento como o saldo final menos as contribuições totais
+  const rendimento = balance - totalContributions;
 
   return (
     <div className="mt-12">
@@ -55,11 +61,28 @@ export default function ResultsDisplay({ data }: { data: InvestmentData }) {
         <p>
           Valor Futuro:{" "}
           <span className="text-green-600 font-bold">
-            R$ {balance.toFixed(2)}
+            R${" "}
+            {balance.toLocaleString("pt-BR", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+          </span>
+        </p>
+        <p>
+          Valor do Rendimento:{" "}
+          <span className="text-blue-600 font-bold">
+            R${" "}
+            {rendimento.toLocaleString("pt-BR", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
           </span>
         </p>
 
-        {/* Gráfico */}
+        {/* Gráfico de Colunas */}
+        <ColumnChart data={data} />
+
+        {/* Gráfico de Linha */}
         <div className="mt-6">
           <Chart
             type="line"
